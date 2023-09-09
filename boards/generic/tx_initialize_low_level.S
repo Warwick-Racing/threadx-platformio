@@ -38,7 +38,7 @@
 @
 @
 CORE_HZ      =   F_CPU
-OSTICK_HZ         =   TX_TICK_RATE
+OSTICK_HZ         =   TX_TIMER_TICKS_PER_SECOND
 SYSTICK_CYCLES    =   ((CORE_HZ / OSTICK_HZ) - 1)
 
     .text 32

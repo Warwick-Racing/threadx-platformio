@@ -44,11 +44,6 @@
 #include "../ports/cortex_m0/src/tx_timer_interrupt.S"
 #endif
 
-#ifndef TX_TICK_RATE
-#define TX_TICK_RATE 100
-#warning "TX_TICK_RATE was not defined, setting to a default of 100"
-#endif
-
 #if defined(__IMXRT1062__)
 #include "../boards/teensy41/tx_initialize_low_level.S"
 #else
