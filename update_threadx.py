@@ -45,7 +45,7 @@ def main():
     tx_inc_common = str(threadx_path / "common" / "inc")
 
     src_common = str(Path(".") / "src" / "common")
-    inc_common = str(Path(".") / "include" / "common")
+    inc_common = str(Path(".") / "include")
 
     try:
         shutil.rmtree(src_common)
@@ -73,7 +73,7 @@ def main():
         shutil.copytree(tx_src_port, src_port)
 
         inc_port = Path(".") / "ports" / arch / "include"
-        os.mkdir(str(inc_port))
+        # os.mkdir(str(inc_port))
         shutil.copyfile(
             str(threadx_path / "ports" / arch / "gnu" / "inc" / "tx_port.h"),
             str(inc_port / "tx_port.h"),

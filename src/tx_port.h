@@ -1,22 +1,18 @@
-/* 
-    The purpose of this file is to include the actual tx_port.h file for current cpu architecture
-    Author: Neo Xiong <xiongyu0523@gmail.com> 
+/*
+    The purpose of this file is to include the actual tx_port.h file for current
+   cpu architecture Author: Neo Xiong <xiongyu0523@gmail.com>
 */
+#pragma once
 
-#ifndef TX_PORT_H
-#define TX_PORT_H
-
-#if defined(__SAMD21G18A__)
-#include "../ports/arch/cortex_m0/tx_port_cortex_m0.h"
-#elif (defined(__SAMD51P19A__) || defined(__SAMD51J19A__) || defined(STM32L4xx))
-#include "../ports/arch/cortex_m4/tx_port_cortex_m4.h"
-#elif defined(STM32F7xx)
-#include "../ports/arch/cortex_m7/tx_port_cortex_m7.h"
+#if (defined(__TARGET_CPU_CORTEX_M0PLUS) || defined(__TX_CORTEX_M0))
+#include "../ports/cortex_m0/include/tx_port.h"
+#elif (defined(__TARGET_CPU_CORTEX_M4) || defined(__TX_CORTEX_M4))
+#include "../ports/cortex_m4/include/tx_port.h"
+#elif (defined(__TARGET_CPU_CORTEX_M7) || defined(__TX_CORTEX_M7) ||           \
+       defined(__IMXRT1062__))
+#include "../ports/cortex_m7/include/tx_port.h"
 #else
-#error "Microcontroller is not supported!"
+#warning                                                                       \
+    "Attempting to compile with ThreadX Cortex M0 port as a default, this may not work!"
+#include "../ports/cortex_m0/include/tx_port.h"
 #endif
-
-#endif
-
-
-
