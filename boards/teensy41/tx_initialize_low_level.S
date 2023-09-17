@@ -26,9 +26,6 @@
     .global     _tx_timer_interrupt
     .global     __tx_SysTickHandler                 @ SysTick
     
-@
-OSTICK_HZ         =   TX_TIMER_TICKS_PER_SECOND
-
     .text 32
     .align 4
     .syntax unified
@@ -109,6 +106,8 @@ _tx_initialize_low_level:
 @
 @    /* Configure handler priorities.  */
 @
+    LDR     r0, =#0xE000E000                        @ Build NVIC addr 
+
     LDR     r1, =0x00000000                         @ Rsrv, UsgF, BusF, MemM
     STR     r1, [r0, #0xD18]                        @ Setup System Handlers 4-7 Priority Registers
 
