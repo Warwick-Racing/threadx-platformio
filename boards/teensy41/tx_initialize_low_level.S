@@ -21,25 +21,13 @@
 @/**************************************************************************/
 @
 @
+    .global     teensy_setup_timer
     .global     _tx_thread_system_stack_ptr
-    .global     _tx_initialize_unused_memory
     .global     _tx_timer_interrupt
-    .global     __main
-    .global     __tx_SVCallHandler
-    .global     __tx_PendSVHandler
-    .global     g_pfnVectors
-    .global     __tx_NMIHandler                     @ NMI
-    .global     __tx_BadHandler                     @ HardFault
-    .global     __tx_SVCallHandler                  @ SVCall
-    .global     __tx_DBGHandler                     @ Monitor
-    .global     __tx_PendSVHandler                  @ PendSV
     .global     __tx_SysTickHandler                 @ SysTick
-    .global     __tx_IntHandler                     @ Int 0
+    
 @
-@
-CORE_HZ      =   F_CPU
 OSTICK_HZ         =   TX_TIMER_TICKS_PER_SECOND
-SYSTICK_CYCLES    =   ((CORE_HZ / OSTICK_HZ) - 1)
 
     .text 32
     .align 4
@@ -97,18 +85,13 @@ _tx_initialize_low_level:
 @
 @    /* Disable interrupts during ThreadX initialization.  */
 @
-    CPSID   i
-@
-@    /* Setup Vector Table Offset Register.  */
-@
-    MOV     r0, #0xE000E000                         @ Build address of NVIC registers
-    LDR     r1, =g_pfnVectors                           @ Pickup address of vector table
-    STR     r1, [r0, #0xD08]                        @ Set vector table address
+    CPSID   i  
 @
 @    /* Set system stack pointer from vector value.  */
 @
     LDR     r0, =_tx_thread_system_stack_ptr        @ Build address of system stack pointer
-    LDR     r1, =g_pfnVectors                           @ Pickup address of vector table
+    LDR     r1, =#0xE000ED08                        @ VTOR register
+    LDR     r1, [r1]                                @ Pickup address of vector table
     LDR     r1, [r1]                                @ Pickup reset stack pointer
     STR     r1, [r0]                                @ Save system stack pointer
 @
@@ -119,13 +102,10 @@ _tx_initialize_low_level:
     ORR     r1, r1, #1                              @ Set the CYCCNTENA bit
     STR     r1, [r0]                                @ Enable the cycle count register
 @
-@    /* Configure SysTick for 100Hz clock, or 16384 cycles if no reference.  */
+@    /* Configure IMX1062 General Purpose Timer  */
 @
-    MOV     r0, #0xE000E000                         @ Build address of NVIC registers
-    LDR     r1, =SYSTICK_CYCLES
-    STR     r1, [r0, #0x14]                         @ Setup SysTick Reload Value
-    MOV     r1, #0x7                                @ Build SysTick Control Enable Value
-    STR     r1, [r0, #0x10]                         @ Setup SysTick Control
+    BL teensy_setup_timer
+
 @
 @    /* Configure handler priorities.  */
 @
@@ -146,60 +126,12 @@ _tx_initialize_low_level:
 @}
 @
 
-@/* Define shells for each of the unused vectors.  */
-@
-    .global  __tx_BadHandler
-    .thumb_func
-__tx_BadHandler:
-    B       __tx_BadHandler
-
-@ /* added to catch the hardfault */
-
-    .global  __tx_HardfaultHandler
-    .thumb_func
-__tx_HardfaultHandler:
-    B       __tx_HardfaultHandler
-
-
-@ /* added to catch the SVC */
-
-    .global  __tx_SVCallHandler
-    .thumb_func
-__tx_SVCallHandler:
-    B       __tx_SVCallHandler
-
-
-@ /* Generic interrupt handler template */
-    .global  __tx_IntHandler
-    .thumb_func
-__tx_IntHandler:
-@ VOID InterruptHandler (VOID)
-@ {
-    PUSH    {r0, lr}
-#ifdef TX_ENABLE_EXECUTION_CHANGE_NOTIFY
-    BL      _tx_execution_isr_enter             @ Call the ISR enter function
-#endif
-
-@    /* Do interrupt handler work here */
-@    /* BL <your C Function>.... */
-
-#ifdef TX_ENABLE_EXECUTION_CHANGE_NOTIFY
-    BL      _tx_execution_isr_exit              @ Call the ISR exit function
-#endif
-    POP     {r0, lr}
-    BX      LR
-@ }
 
 @ /* System Tick timer interrupt handler */
     .global  __tx_SysTickHandler
-    .global  osSystickHandler
     .thumb_func
 __tx_SysTickHandler:
     .thumb_func
-osSystickHandler:
-@ VOID osSystickHandler (VOID)
-@ {
-@
     PUSH    {r0, lr}
 #ifdef TX_ENABLE_EXECUTION_CHANGE_NOTIFY
     BL      _tx_execution_isr_enter             @ Call the ISR enter function
@@ -210,16 +142,3 @@ osSystickHandler:
 #endif
     POP     {r0, lr}
     BX      LR
-@ }
-
-
-@ /* NMI, DBG handlers */
-    .global  __tx_NMIHandler
-    .thumb_func
-__tx_NMIHandler:
-    B       __tx_NMIHandler
-
-    .global  __tx_DBGHandler
-    .thumb_func
-__tx_DBGHandler:
-    B       __tx_DBGHandler

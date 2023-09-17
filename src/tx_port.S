@@ -47,6 +47,5 @@
 #if defined(__IMXRT1062__)
 #include "../boards/teensy41/tx_initialize_low_level.S"
 #else
-#include "../boards/generic/tx_initialize_low_level.S"
-#warning "Using the generic tx_initialize_low_level, this may not work!"
+#error "Unsupported board!"
 #endif
